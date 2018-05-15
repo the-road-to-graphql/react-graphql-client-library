@@ -223,7 +223,7 @@ class App extends Component {
 
   render() {
     const { path, value } = this.state;
-    const [organization, repository] = path.split('/');
+    const [organizationName, repositoryName] = path.split('/');
 
     return (
       <div>
@@ -247,9 +247,12 @@ class App extends Component {
 
         <Query
           query={GET_ISSUES_OF_REPOSITORY}
-          variables={{ organization, repository }}
+          variables={{
+            organization: organizationName,
+            repository: repositoryName,
+          }}
         >
-          {({ data, loading, errors }) => {
+          {({ data, loading, errors, fetchMore }) => {
             if (!data) {
               return <p>No information yet ...</p>;
             }
@@ -265,7 +268,18 @@ class App extends Component {
                 organization={organization}
                 errors={errors}
                 onStarRepository={this.onStarRepository}
-                onFetchMoreIssues={this.onFetchMoreIssues}
+                onFetchMoreIssues={() =>
+                  fetchMore({
+                    query: GET_ISSUES_OF_REPOSITORY,
+                    variables: {
+                      organization: organizationName,
+                      repository: repositoryName,
+                      cursor:
+                        organization.repository.issues.pageInfo
+                          .endCursor,
+                    },
+                  })
+                }
               />
             );
           }}
