@@ -1,7 +1,6 @@
 {
   "name": "react-graphql-client",
   "version": "0.1.0",
-  "private": true,
   "main": "library/index.js",
   "peerDependencies": {
     "react": "^16.3.0",
