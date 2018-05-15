@@ -83,15 +83,6 @@ const REMOVE_STAR = `
   }
 `;
 
-const getIssuesOfRepository = (path, cursor) => {
-  const [organization, repository] = path.split('/');
-
-  return axiosGitHubGraphQL.post('', {
-    query: GET_ISSUES_OF_REPOSITORY,
-    variables: { organization, repository, cursor },
-  });
-};
-
 const addStarToRepository = repositoryId => {
   return axiosGitHubGraphQL.post('', {
     query: ADD_STAR,
@@ -106,32 +97,30 @@ const removeStarFromRepository = repositoryId => {
   });
 };
 
-const resolveIssuesQuery = (queryResult, cursor) => state => {
+const resolveFetchMore = (queryResult, state) => {
   const { data, errors } = queryResult.data;
 
-  if (!cursor) {
-    return {
-      organization: data.organization,
-      errors,
-    };
-  }
-
-  const { edges: oldIssues } = state.organization.repository.issues;
+  const {
+    edges: oldIssues,
+  } = state.data.organization.repository.issues;
   const { edges: newIssues } = data.organization.repository.issues;
   const updatedIssues = [...oldIssues, ...newIssues];
 
   return {
-    organization: {
-      ...data.organization,
-      repository: {
-        ...data.organization.repository,
-        issues: {
-          ...data.organization.repository.issues,
-          edges: updatedIssues,
+    errors,
+    data: {
+      ...data,
+      organization: {
+        ...data.organization,
+        repository: {
+          ...data.organization.repository,
+          issues: {
+            ...data.organization.repository.issues,
+            edges: updatedIssues,
+          },
         },
       },
     },
-    errors,
   };
 };
 
@@ -195,12 +184,6 @@ class App extends Component {
     event.preventDefault();
   };
 
-  onFetchFromGitHub = (path, cursor) => {
-    getIssuesOfRepository(path, cursor).then(queryResult =>
-      this.setState(resolveIssuesQuery(queryResult, cursor)),
-    );
-  };
-
   onStarRepository = (repositoryId, viewerHasStarred) => {
     if (viewerHasStarred) {
       removeStarFromRepository(repositoryId).then(mutationResult =>
@@ -211,14 +194,6 @@ class App extends Component {
         this.setState(resolveAddStarMutation(mutationResult)),
       );
     }
-  };
-
-  onFetchMoreIssues = () => {
-    const {
-      endCursor,
-    } = this.state.organization.repository.issues.pageInfo;
-
-    this.onFetchFromGitHub(this.state.path, endCursor);
   };
 
   render() {
@@ -251,6 +226,7 @@ class App extends Component {
             organization: organizationName,
             repository: repositoryName,
           }}
+          resolveFetchMore={resolveFetchMore}
         >
           {({ data, loading, errors, fetchMore }) => {
             if (!data) {

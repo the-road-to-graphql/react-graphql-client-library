@@ -3,11 +3,6 @@ import { isEqual } from 'lodash';
 
 import withClient from './withClient';
 
-const REQUEST_TYPES = {
-  fetch: 'fetch',
-  fetchMore: 'fetchMore',
-};
-
 class Query extends React.Component {
   state = {
     data: null,
@@ -19,26 +14,18 @@ class Query extends React.Component {
   componentDidMount() {
     const { query, variables } = this.props;
 
-    this.query({ query, variables }, REQUEST_TYPES.fetch);
+    this.query({ query, variables });
   }
 
   componentDidUpdate(prevProps) {
     if (!isEqual(this.props.variables, prevProps.variables)) {
       const { query, variables } = this.props;
 
-      this.query({ query, variables }, REQUEST_TYPES.fetch);
+      this.query({ query, variables });
     }
   }
 
-  query = ({ query, variables }, requestType) => {
-    if (requestType === REQUEST_TYPES.fetch) {
-      this.setState({ loading: true });
-    }
-
-    if (requestType === REQUEST_TYPES.fetchMore) {
-      this.setState({ fetchMoreLoading: true });
-    }
-
+  query = ({ query, variables }) => {
     this.props.client
       .query({ query, variables })
       .then(result =>
@@ -46,20 +33,35 @@ class Query extends React.Component {
           data: result.data.data,
           errors: result.data.errors,
           loading: false,
-          fetchMoreLoading: false,
         }),
       )
       .catch(error =>
         this.setState({
           errors: [error],
           loading: false,
-          fetchMoreLoading: false,
         }),
       );
   };
 
   fetchMore = ({ query, variables }) => {
-    this.query({ query, variables }, REQUEST_TYPES.fetchMore);
+    this.queryMore({ query, variables });
+  };
+
+  queryMore = ({ query, variables }) => {
+    this.props.client
+      .query({ query, variables })
+      .then(result =>
+        this.setState(state => ({
+          ...this.props.resolveFetchMore(result, state),
+          fetchMoreLoading: false,
+        })),
+      )
+      .catch(error =>
+        this.setState({
+          errors: [error],
+          fetchMoreLoading: false,
+        }),
+      );
   };
 
   render() {
