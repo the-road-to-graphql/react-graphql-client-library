@@ -1,4 +1,9 @@
 import React, { Component } from 'react';
+
+import { Query } from './my-client-react';
+
+///
+
 import axios from 'axios';
 
 const axiosGitHubGraphQL = axios.create({
@@ -9,6 +14,8 @@ const axiosGitHubGraphQL = axios.create({
     }`,
   },
 });
+
+///
 
 const TITLE = 'React GraphQL GitHub Client';
 
@@ -175,13 +182,7 @@ const resolveRemoveStarMutation = mutationResult => state => {
 class App extends Component {
   state = {
     path: 'the-road-to-learn-react/the-road-to-learn-react',
-    organization: null,
-    errors: null,
   };
-
-  componentDidMount() {
-    this.onFetchFromGitHub(this.state.path);
-  }
 
   onChange = event => {
     this.setState({ path: event.target.value });
@@ -220,7 +221,8 @@ class App extends Component {
   };
 
   render() {
-    const { path, organization, errors } = this.state;
+    const { path } = this.state;
+    const [organization, repository] = path.split('/');
 
     return (
       <div>
@@ -242,16 +244,31 @@ class App extends Component {
 
         <hr />
 
-        {organization ? (
-          <Organization
-            organization={organization}
-            errors={errors}
-            onStarRepository={this.onStarRepository}
-            onFetchMoreIssues={this.onFetchMoreIssues}
-          />
-        ) : (
-          <p>No information yet ...</p>
-        )}
+        <Query
+          query={GET_ISSUES_OF_REPOSITORY}
+          variables={{ organization, repository }}
+        >
+          {({ data, loading, errors }) => {
+            if (!data) {
+              return <p>No information yet ...</p>;
+            }
+
+            const { organization } = data;
+
+            if (loading) {
+              return <p>Loading ...</p>;
+            }
+
+            return (
+              <Organization
+                organization={organization}
+                errors={errors}
+                onStarRepository={this.onStarRepository}
+                onFetchMoreIssues={this.onFetchMoreIssues}
+              />
+            );
+          }}
+        </Query>
       </div>
     );
   }
