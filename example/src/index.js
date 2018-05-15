@@ -1,13 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import MyGraphQLClient from './my-client';
-import { Provider } from './my-client-react';
+import GraphQLClient, { Provider } from 'react-graphql-client';
 
 import App from './App';
 import registerServiceWorker from './registerServiceWorker';
 
-const client = new MyGraphQLClient({
+const client = new GraphQLClient({
   baseURL: 'https://api.github.com/graphql',
   headers: {
     Authorization: `bearer ${

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 
-import { Query, Mutation } from './my-client-react';
+import { Query, Mutation } from 'react-graphql-client';
 
 const TITLE = 'React GraphQL GitHub Client';
 
