@@ -8,4 +8,6 @@ import {
   Mutation,
 } from './my-client-react';
 
+export { Provider, Consumer, withClient, Query, Mutation };
+
 export default GraphQLClient;
