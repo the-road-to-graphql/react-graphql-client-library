@@ -1,1 +1,1 @@
-# build-your-own-react-graphql-client
+# react-graphql-client

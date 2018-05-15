@@ -1,22 +1,27 @@
 {
-  "name": "react-graphql-github-vanilla",
+  "name": "react-graphql-client",
   "version": "0.1.0",
   "private": true,
+  "main": "library/index.js",
+  "peerDependencies": {
+    "react": "^16.3.0",
+    "react-dom": "^16.3.0"
+  },
   "dependencies": {
     "axios": "^0.17.1",
-    "lodash": "^4.17.10",
-    "react": "^16.3.2",
-    "react-dom": "^16.3.2",
-    "react-scripts": "1.1.0",
-    "recompose": "^0.27.0"
-  },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject"
+    "lodash": "^4.17.10"
   },
   "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.3",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-react": "^6.24.1",
+    "babel-preset-stage-2": "^6.24.1",
     "prettier": "^1.11.1"
+  },
+  "scripts": {
+    "compile": "babel -d lib/ src/",
+    "prepublish": "npm run compile",
+    "test": "echo \"No test specified\" && exit 0"
   }
 }

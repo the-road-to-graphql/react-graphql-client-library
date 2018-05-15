@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-class MyGraphQLClient {
+class GraphQLClient {
   axios;
 
   constructor({ baseURL, headers }) {
@@ -25,4 +25,4 @@ class MyGraphQLClient {
   }
 }
 
-export default MyGraphQLClient;
+export default GraphQLClient;
