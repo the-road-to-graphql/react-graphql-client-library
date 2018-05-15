@@ -1,21 +1,6 @@
 import React, { Component } from 'react';
 
-import { Query } from './my-client-react';
-
-///
-
-import axios from 'axios';
-
-const axiosGitHubGraphQL = axios.create({
-  baseURL: 'https://api.github.com/graphql',
-  headers: {
-    Authorization: `bearer ${
-      process.env.REACT_APP_GITHUB_PERSONAL_ACCESS_TOKEN
-    }`,
-  },
-});
-
-///
+import { Query, Mutation } from './my-client-react';
 
 const TITLE = 'React GraphQL GitHub Client';
 
@@ -32,10 +17,10 @@ const GET_ISSUES_OF_REPOSITORY = `
         id
         name
         url
-        stargazers {
+        watchers {
           totalCount
         }
-        viewerHasStarred
+        viewerSubscription
         issues(first: 5, after: $cursor, states: [OPEN]) {
           edges {
             node {
@@ -63,43 +48,20 @@ const GET_ISSUES_OF_REPOSITORY = `
   }
 `;
 
-const ADD_STAR = `
-  mutation ($repositoryId: ID!) {
-    addStar(input:{starrableId:$repositoryId}) {
-      starrable {
-        viewerHasStarred
+const WATCH_REPOSITORY = `
+  mutation($id: ID!, $viewerSubscription: SubscriptionState!) {
+    updateSubscription(
+      input: { state: $viewerSubscription, subscribableId: $id }
+    ) {
+      subscribable {
+        id
+        viewerSubscription
       }
     }
   }
 `;
 
-const REMOVE_STAR = `
-  mutation ($repositoryId: ID!) {
-    removeStar(input:{starrableId:$repositoryId}) {
-      starrable {
-        viewerHasStarred
-      }
-    }
-  }
-`;
-
-const addStarToRepository = repositoryId => {
-  return axiosGitHubGraphQL.post('', {
-    query: ADD_STAR,
-    variables: { repositoryId },
-  });
-};
-
-const removeStarFromRepository = repositoryId => {
-  return axiosGitHubGraphQL.post('', {
-    query: REMOVE_STAR,
-    variables: { repositoryId },
-  });
-};
-
-const resolveFetchMore = (queryResult, state) => {
-  const { data, errors } = queryResult.data;
-
+const resolveFetchMore = (data, state) => {
   const {
     edges: oldIssues,
   } = state.data.organization.repository.issues;
@@ -107,66 +69,38 @@ const resolveFetchMore = (queryResult, state) => {
   const updatedIssues = [...oldIssues, ...newIssues];
 
   return {
-    errors,
-    data: {
-      ...data,
-      organization: {
-        ...data.organization,
-        repository: {
-          ...data.organization.repository,
-          issues: {
-            ...data.organization.repository.issues,
-            edges: updatedIssues,
-          },
+    organization: {
+      ...data.organization,
+      repository: {
+        ...data.organization.repository,
+        issues: {
+          ...data.organization.repository.issues,
+          edges: updatedIssues,
         },
       },
     },
   };
 };
 
-const resolveAddStarMutation = mutationResult => state => {
-  const {
-    viewerHasStarred,
-  } = mutationResult.data.data.addStar.starrable;
-
-  const { totalCount } = state.organization.repository.stargazers;
+const resolveWatchMutation = (data, state) => {
+  const { totalCount } = state.data.updateSubscription.subscribable;
+  const { viewerSubscription } = data.updateSubscription.subscribable;
 
   return {
-    ...state,
-    organization: {
-      ...state.organization,
-      repository: {
-        ...state.organization.repository,
-        viewerHasStarred,
-        stargazers: {
-          totalCount: totalCount + 1,
-        },
+    updateSubscription: {
+      subscribable: {
+        viewerSubscription: viewerSubscription,
+        totalCount:
+          viewerSubscription === 'SUBSCRIBED'
+            ? totalCount + 1
+            : totalCount - 1,
       },
     },
   };
 };
 
-const resolveRemoveStarMutation = mutationResult => state => {
-  const {
-    viewerHasStarred,
-  } = mutationResult.data.data.removeStar.starrable;
-
-  const { totalCount } = state.organization.repository.stargazers;
-
-  return {
-    ...state,
-    organization: {
-      ...state.organization,
-      repository: {
-        ...state.organization.repository,
-        viewerHasStarred,
-        stargazers: {
-          totalCount: totalCount - 1,
-        },
-      },
-    },
-  };
-};
+const isWatch = updateSubscription =>
+  updateSubscription.subscribable.viewerSubscription === 'SUBSCRIBED';
 
 class App extends Component {
   state = {
@@ -182,18 +116,6 @@ class App extends Component {
     this.setState({ path: this.state.value });
 
     event.preventDefault();
-  };
-
-  onStarRepository = (repositoryId, viewerHasStarred) => {
-    if (viewerHasStarred) {
-      removeStarFromRepository(repositoryId).then(mutationResult =>
-        this.setState(resolveRemoveStarMutation(mutationResult)),
-      );
-    } else {
-      addStarToRepository(repositoryId).then(mutationResult =>
-        this.setState(resolveAddStarMutation(mutationResult)),
-      );
-    }
   };
 
   render() {
@@ -239,11 +161,19 @@ class App extends Component {
               return <p>Loading ...</p>;
             }
 
+            if (errors) {
+              return (
+                <p>
+                  <strong>Something went wrong:</strong>
+                  {errors.map(error => error.message).join(' ')}
+                </p>
+              );
+            }
+
             return (
               <Organization
                 organization={organization}
                 errors={errors}
-                onStarRepository={this.onStarRepository}
                 onFetchMoreIssues={() =>
                   fetchMore({
                     query: GET_ISSUES_OF_REPOSITORY,
@@ -268,53 +198,59 @@ class App extends Component {
 const Organization = ({
   organization,
   errors,
-  onStarRepository,
-  onFetchMoreIssues,
-}) => {
-  if (errors) {
-    return (
-      <p>
-        <strong>Something went wrong:</strong>
-        {errors.map(error => error.message).join(' ')}
-      </p>
-    );
-  }
-
-  return (
-    <div>
-      <p>
-        <strong>Issues from Organization:</strong>
-        <a href={organization.url}>{organization.name}</a>
-      </p>
-      <Repository
-        repository={organization.repository}
-        onStarRepository={onStarRepository}
-        onFetchMoreIssues={onFetchMoreIssues}
-      />
-    </div>
-  );
-};
-
-const Repository = ({
-  repository,
-  onStarRepository,
   onFetchMoreIssues,
 }) => (
+  <div>
+    <p>
+      <strong>Issues from Organization:</strong>
+      <a href={organization.url}>{organization.name}</a>
+    </p>
+    <Repository
+      repository={organization.repository}
+      onFetchMoreIssues={onFetchMoreIssues}
+    />
+  </div>
+);
+
+const Repository = ({ repository, onFetchMoreIssues }) => (
   <div>
     <p>
       <strong>In Repository:</strong>
       <a href={repository.url}>{repository.name}</a>
     </p>
-
-    <button
-      type="button"
-      onClick={() =>
-        onStarRepository(repository.id, repository.viewerHasStarred)
-      }
+    <Mutation
+      mutation={WATCH_REPOSITORY}
+      initial={{
+        updateSubscription: {
+          subscribable: {
+            viewerSubscription: repository.viewerSubscription,
+            totalCount: repository.watchers.totalCount,
+          },
+        },
+      }}
+      resolveMutation={resolveWatchMutation}
     >
-      {repository.stargazers.totalCount}
-      {repository.viewerHasStarred ? ' Unstar' : ' Star'}
-    </button>
+      {(toggleWatch, { data, loading, errors }) => {
+        return (
+          <button
+            type="button"
+            onClick={() =>
+              toggleWatch({
+                variables: {
+                  id: repository.id,
+                  viewerSubscription: isWatch(data.updateSubscription)
+                    ? 'UNSUBSCRIBED'
+                    : 'SUBSCRIBED',
+                },
+              })
+            }
+          >
+            {data.updateSubscription.subscribable.totalCount}
+            {isWatch(data.updateSubscription) ? ' Unwatch' : ' Watch'}
+          </button>
+        );
+      }}
+    </Mutation>
 
     <Issues
       issues={repository.issues}

@@ -52,7 +52,8 @@ class Query extends React.Component {
       .query({ query, variables })
       .then(result =>
         this.setState(state => ({
-          ...this.props.resolveFetchMore(result, state),
+          data: this.props.resolveFetchMore(result.data.data, state),
+          errors: result.data.errors,
           fetchMoreLoading: false,
         })),
       )

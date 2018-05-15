@@ -17,7 +17,7 @@ class MyGraphQLClient {
     });
   }
 
-  mutation({ mutation, variables }) {
+  mutate({ mutation, variables }) {
     return this.axios.post('', {
       query: mutation,
       variables,
