@@ -181,15 +181,16 @@ const resolveRemoveStarMutation = mutationResult => state => {
 
 class App extends Component {
   state = {
+    value: 'the-road-to-learn-react/the-road-to-learn-react',
     path: 'the-road-to-learn-react/the-road-to-learn-react',
   };
 
   onChange = event => {
-    this.setState({ path: event.target.value });
+    this.setState({ value: event.target.value });
   };
 
   onSubmit = event => {
-    this.onFetchFromGitHub(this.state.path);
+    this.setState({ path: this.state.value });
 
     event.preventDefault();
   };
@@ -221,7 +222,7 @@ class App extends Component {
   };
 
   render() {
-    const { path } = this.state;
+    const { path, value } = this.state;
     const [organization, repository] = path.split('/');
 
     return (
@@ -235,7 +236,7 @@ class App extends Component {
           <input
             id="url"
             type="text"
-            value={path}
+            value={value}
             onChange={this.onChange}
             style={{ width: '300px' }}
           />
