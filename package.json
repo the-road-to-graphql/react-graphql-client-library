@@ -1,7 +1,7 @@
 {
   "name": "react-graphql-client",
-  "version": "0.1.4",
-  "main": "library/index.js",
+  "version": "0.1.5",
+  "main": "lib/index.js",
   "peerDependencies": {
     "react": "^16.3.0",
     "react-dom": "^16.3.0"
