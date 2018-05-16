@@ -1,6 +1,10 @@
 # react-graphql-client
 
-A simple GraphQL client for React applications. The library is not meant to be a production ready GraphQL client library. It hasn't powerful features such as caching or a global state. **But** it works and it should show that it's not too difficult to implement a GraphQL client library. You can look into the source code and the example application to see that there is not too much to it. If you feel the urge to build a sophisticated GraphQL client library (for React) on top of it, please do it! I encourage everyone to contribute to this ecosystem, because there should be more players in this field.
+The library gives you a simple GraphQL client for React applications. But it shouldn't be used for production. Rather it should be used as inspiration for you and others to contribute to the GraphQL ecosystem.
+
+The library hasn't powerful features. There is no caching, normalization or global state. **But** it works and it should show you that it's not too difficult to start out with the implementation of a simple GraphQL client library. You can look into the source code (_src/_) and the example application (_example/_) to see that there is not too much to it.
+
+If you feel the urge to build a sophisticated GraphQL client library (for React) on top of it, please do it! I encourage everyone to contribute to this ecosystem, because I feel there should be more players in this field. I would love to see this library and repository **as inspiration for you and others to contribute to the GraphQL ecosystem**.
 
 ## Installation
 
@@ -192,7 +196,7 @@ const Organization = ({ organization, onFetchMoreRepositories }) => (
 
 After a click on the "More"-button, the results of both lists of repositories should be merged.
 
-### Mutation
+## Mutation
 
 Last but not least, there is a Mutation component analog to the Query component which is used to execute a mutation. However, in contrast to the Quert component, the Mutation component doesn't execute the mutation on render. You get an explicit callback function in the render prop child function for it.
 
@@ -301,4 +305,3 @@ Otherwise, feel free to improve this repository and to fix bugs for it. However,
 
 * Don't miss [upcoming Tutorials and Courses](https://www.getrevue.co/profile/rwieruch)
 * Check out current [React Courses](https://roadtoreact.com)
-
