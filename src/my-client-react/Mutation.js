@@ -1,4 +1,5 @@
 import React from 'react';
+import { isEqual } from 'lodash';
 
 import withClient from './withClient';
 
@@ -11,6 +12,12 @@ class Mutation extends React.Component {
       loading: null,
       errors: null,
     };
+  }
+
+  componentDidUpdate(prevProps) {
+    if (!isEqual(this.props.initial, prevProps.initial)) {
+      this.setState({ data: this.props.initial });
+    }
   }
 
   mutate = ({

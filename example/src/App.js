@@ -2,45 +2,29 @@ import React, { Component } from 'react';
 
 import { Query, Mutation } from 'react-graphql-client';
 
-const TITLE = 'React GraphQL GitHub Client';
-
-const GET_ISSUES_OF_REPOSITORY = `
+const GET_REPOSITORIES_OF_ORGANIZATION = `
   query (
-    $organization: String!,
-    $repository: String!,
+    $organizationLogin: String!,
     $cursor: String
   ) {
-    organization(login: $organization) {
+    organization(login: $organizationLogin) {
       name
       url
-      repository(name: $repository) {
-        id
-        name
-        url
-        watchers {
-          totalCount
+      repositories(first: 5, after: $cursor) {
+        totalCount
+        pageInfo {
+          endCursor
+          hasNextPage
         }
-        viewerSubscription
-        issues(first: 5, after: $cursor, states: [OPEN]) {
-          edges {
-            node {
-              id
-              title
-              url
-              reactions(last: 3) {
-                edges {
-                  node {
-                    id
-                    content
-                  }
-                }
-              }
+        edges {
+          node {
+            id
+            name
+            url
+            watchers {
+              totalCount
             }
-          }
-          totalCount
-          pageInfo {
-            endCursor
-            hasNextPage
+            viewerSubscription
           }
         }
       }
@@ -62,21 +46,17 @@ const WATCH_REPOSITORY = `
 `;
 
 const resolveFetchMore = (data, state) => {
-  const {
-    edges: oldIssues,
-  } = state.data.organization.repository.issues;
-  const { edges: newIssues } = data.organization.repository.issues;
-  const updatedIssues = [...oldIssues, ...newIssues];
+  const { edges: oldR } = state.data.organization.repositories;
+  const { edges: newR } = data.organization.repositories;
+
+  const updatedRepositories = [...oldR, ...newR];
 
   return {
     organization: {
       ...data.organization,
-      repository: {
-        ...data.organization.repository,
-        issues: {
-          ...data.organization.repository.issues,
-          edges: updatedIssues,
-        },
+      repositories: {
+        ...data.organization.repositories,
+        edges: updatedRepositories,
       },
     },
   };
@@ -89,7 +69,7 @@ const resolveWatchMutation = (data, state) => {
   return {
     updateSubscription: {
       subscribable: {
-        viewerSubscription: viewerSubscription,
+        viewerSubscription,
         totalCount:
           viewerSubscription === 'SUBSCRIBED'
             ? totalCount + 1
@@ -104,8 +84,8 @@ const isWatch = updateSubscription =>
 
 class App extends Component {
   state = {
-    value: 'the-road-to-learn-react/the-road-to-learn-react',
-    path: 'the-road-to-learn-react/the-road-to-learn-react',
+    value: 'the-road-to-learn-react',
+    organizationLogin: 'the-road-to-learn-react',
   };
 
   onChange = event => {
@@ -113,22 +93,21 @@ class App extends Component {
   };
 
   onSubmit = event => {
-    this.setState({ path: this.state.value });
+    this.setState({ organizationLogin: this.state.value });
 
     event.preventDefault();
   };
 
   render() {
-    const { path, value } = this.state;
-    const [organizationName, repositoryName] = path.split('/');
+    const { organizationLogin, value } = this.state;
 
     return (
       <div>
-        <h1>{TITLE}</h1>
+        <h1>React GraphQL GitHub Client</h1>
 
         <form onSubmit={this.onSubmit}>
           <label htmlFor="url">
-            Show open issues for https://github.com/
+            Show repositories for https://github.com/
           </label>
           <input
             id="url"
@@ -143,10 +122,9 @@ class App extends Component {
         <hr />
 
         <Query
-          query={GET_ISSUES_OF_REPOSITORY}
+          query={GET_REPOSITORIES_OF_ORGANIZATION}
           variables={{
-            organization: organizationName,
-            repository: repositoryName,
+            organizationLogin,
           }}
           resolveFetchMore={resolveFetchMore}
         >
@@ -173,16 +151,13 @@ class App extends Component {
             return (
               <Organization
                 organization={organization}
-                errors={errors}
-                onFetchMoreIssues={() =>
+                onFetchMoreRepositories={() =>
                   fetchMore({
-                    query: GET_ISSUES_OF_REPOSITORY,
+                    query: GET_REPOSITORIES_OF_ORGANIZATION,
                     variables: {
-                      organization: organizationName,
-                      repository: repositoryName,
+                      organizationLogin,
                       cursor:
-                        organization.repository.issues.pageInfo
-                          .endCursor,
+                        organization.repositories.pageInfo.endCursor,
                     },
                   })
                 }
@@ -195,90 +170,68 @@ class App extends Component {
   }
 }
 
-const Organization = ({
-  organization,
-  errors,
-  onFetchMoreIssues,
-}) => (
+const Organization = ({ organization, onFetchMoreRepositories }) => (
   <div>
-    <p>
-      <strong>Issues from Organization:</strong>
+    <h1>
       <a href={organization.url}>{organization.name}</a>
-    </p>
-    <Repository
-      repository={organization.repository}
-      onFetchMoreIssues={onFetchMoreIssues}
+    </h1>
+    <Repositories
+      repositories={organization.repositories}
+      onFetchMoreRepositories={onFetchMoreRepositories}
     />
   </div>
 );
 
-const Repository = ({ repository, onFetchMoreIssues }) => (
-  <div>
-    <p>
-      <strong>In Repository:</strong>
-      <a href={repository.url}>{repository.name}</a>
-    </p>
-    <Mutation
-      mutation={WATCH_REPOSITORY}
-      initial={{
-        updateSubscription: {
-          subscribable: {
-            viewerSubscription: repository.viewerSubscription,
-            totalCount: repository.watchers.totalCount,
-          },
-        },
-      }}
-      resolveMutation={resolveWatchMutation}
-    >
-      {(toggleWatch, { data, loading, errors }) => {
-        return (
-          <button
-            type="button"
-            onClick={() =>
-              toggleWatch({
-                variables: {
-                  id: repository.id,
-                  viewerSubscription: isWatch(data.updateSubscription)
-                    ? 'UNSUBSCRIBED'
-                    : 'SUBSCRIBED',
-                },
-              })
-            }
-          >
-            {data.updateSubscription.subscribable.totalCount}
-            {isWatch(data.updateSubscription) ? ' Unwatch' : ' Watch'}
-          </button>
-        );
-      }}
-    </Mutation>
-
-    <Issues
-      issues={repository.issues}
-      onFetchMoreIssues={onFetchMoreIssues}
-    />
-  </div>
-);
-
-const Issues = ({ issues, onFetchMoreIssues }) => (
+const Repositories = ({ repositories, onFetchMoreRepositories }) => (
   <div>
     <ul>
-      {issues.edges.map(issue => (
-        <li key={issue.node.id}>
-          <a href={issue.node.url}>{issue.node.title}</a>
-
-          <ul>
-            {issue.node.reactions.edges.map(reaction => (
-              <li key={reaction.node.id}>{reaction.node.content}</li>
-            ))}
-          </ul>
+      {repositories.edges.map(repository => (
+        <li key={repository.node.id}>
+          <a href={repository.node.url}>{repository.node.name}</a>{' '}
+          <Mutation
+            mutation={WATCH_REPOSITORY}
+            initial={{
+              updateSubscription: {
+                subscribable: {
+                  viewerSubscription:
+                    repository.node.viewerSubscription,
+                  totalCount: repository.node.watchers.totalCount,
+                },
+              },
+            }}
+            resolveMutation={resolveWatchMutation}
+          >
+            {(toggleWatch, { data, loading, errors }) => (
+              <button
+                type="button"
+                onClick={() =>
+                  toggleWatch({
+                    variables: {
+                      id: repository.node.id,
+                      viewerSubscription: isWatch(
+                        data.updateSubscription,
+                      )
+                        ? 'UNSUBSCRIBED'
+                        : 'SUBSCRIBED',
+                    },
+                  })
+                }
+              >
+                {data.updateSubscription.subscribable.totalCount}
+                {isWatch(data.updateSubscription)
+                  ? ' Unwatch'
+                  : ' Watch'}
+              </button>
+            )}
+          </Mutation>
         </li>
       ))}
     </ul>
 
     <hr />
 
-    {issues.pageInfo.hasNextPage && (
-      <button onClick={onFetchMoreIssues}>More</button>
+    {repositories.pageInfo.hasNextPage && (
+      <button onClick={onFetchMoreRepositories}>More</button>
     )}
   </div>
 );
