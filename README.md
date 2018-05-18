@@ -223,18 +223,16 @@ const WATCH_REPOSITORY = `
 `;
 
 const resolveWatchMutation = (data, state) => {
-  const { totalCount } = state.data.updateSubscription.subscribable;
+  const { totalCount } = state.data.repository;
   const { viewerSubscription } = data.updateSubscription.subscribable;
 
   return {
-    updateSubscription: {
-      subscribable: {
-        viewerSubscription,
-        totalCount:
-          viewerSubscription === 'SUBSCRIBED'
-            ? totalCount + 1
-            : totalCount - 1,
-      },
+    repository: {
+      viewerSubscription,
+      totalCount:
+        viewerSubscription === 'SUBSCRIBED'
+          ? totalCount + 1
+          : totalCount - 1,
     },
   };
 };
@@ -248,12 +246,10 @@ const Repositories = ({ repositories }) => (
         <Mutation
           mutation={WATCH_REPOSITORY}
           initial={{
-            updateSubscription: {
-              subscribable: {
-                viewerSubscription:
-                  repository.node.viewerSubscription,
-                totalCount: repository.node.watchers.totalCount,
-              },
+            repository: {
+              viewerSubscription:
+                repository.node.viewerSubscription,
+              totalCount: repository.node.watchers.totalCount,
             },
           }}
           resolveMutation={resolveWatchMutation}
@@ -266,7 +262,7 @@ const Repositories = ({ repositories }) => (
                   variables: {
                     id: repository.node.id,
                     viewerSubscription: isWatch(
-                      data.updateSubscription,
+                      data.repository.viewerSubscription,
                     )
                       ? 'UNSUBSCRIBED'
                       : 'SUBSCRIBED',
@@ -274,8 +270,8 @@ const Repositories = ({ repositories }) => (
                 })
               }
             >
-              {data.updateSubscription.subscribable.totalCount}
-              {isWatch(data.updateSubscription)
+              {data.repository.totalCount}
+              {isWatch(data.repository.viewerSubscription)
                 ? ' Unwatch'
                 : ' Watch'}
             </button>
