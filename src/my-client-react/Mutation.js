@@ -8,7 +8,7 @@ class Mutation extends React.Component {
     super(props);
 
     this.state = {
-      data: this.props.initial || null,
+      data: this.props.initial,
       loading: null,
       errors: null,
     };
@@ -29,19 +29,11 @@ class Mutation extends React.Component {
     client
       .mutate({ mutation, variables })
       .then(result => {
-        if (resolveMutation) {
-          this.setState(state => ({
-            data: resolveMutation(result.data.data, state),
-            errors: result.data.errors,
-            loading: false,
-          }));
-        } else {
-          this.setState({
-            data: result.data.data,
-            errors: result.data.errors,
-            loading: false,
-          });
-        }
+        this.setState(state => ({
+          data: resolveMutation(result.data.data, state),
+          errors: result.data.errors,
+          loading: false,
+        }));
       })
       .catch(error =>
         this.setState({

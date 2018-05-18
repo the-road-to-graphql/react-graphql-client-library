@@ -43,10 +43,6 @@ class Query extends React.Component {
       );
   };
 
-  fetchMore = ({ query, variables }) => {
-    this.queryMore({ query, variables });
-  };
-
   queryMore = ({ query, variables }) => {
     this.props.client
       .query({ query, variables })
@@ -68,7 +64,7 @@ class Query extends React.Component {
   render() {
     return this.props.children({
       ...this.state,
-      fetchMore: this.fetchMore,
+      fetchMore: this.queryMore,
     });
   }
 }
