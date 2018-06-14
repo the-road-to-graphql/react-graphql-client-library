@@ -6,7 +6,7 @@ The library hasn't powerful features. There is no caching, normalization or glob
 
 If you feel the urge to build a sophisticated GraphQL client library (for React) on top of it, please do it! I encourage everyone to contribute to this ecosystem, because I feel there should be more players in this field. I would love to see this library and repository **as inspiration for you and others to contribute to the GraphQL ecosystem**.
 
-[Are you keen to implement your own React GraphQL client?](https://www.robinwieruch.de/react-graphql-client)
+[Are you keen to implement your own React GraphQL client?](https://www.robinwieruch.de/react-graphql-client-library)
 
 ## Installation
 
