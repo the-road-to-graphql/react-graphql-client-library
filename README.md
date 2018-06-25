@@ -1,5 +1,7 @@
 # react-graphql-client
 
+[![Slack](https://slack-the-road-to-learn-react.wieruch.com/badge.svg)](https://slack-the-road-to-learn-react.wieruch.com/)
+
 The library gives you a simple GraphQL client for React applications. But it shouldn't be used for production. Rather it should be used as inspiration for you and others to contribute to the GraphQL ecosystem.
 
 The library hasn't powerful features. There is no caching, normalization or global state. **But** it works and it should show you that it's not too difficult to start out with the implementation of a simple GraphQL client library. You can look into the source code (_src/_) and the example application (_example/_) to see that there is not too much to it.
