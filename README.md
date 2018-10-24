@@ -1,6 +1,6 @@
 # react-graphql-client
 
-[![Build Status](https://travis-ci.org/the-road-to-graphql/react-graphql-client-library.svg?branch=master)](https://travis-ci.org/the-road-to-graphql/react-graphql-client-library) [![Slack](https://slack-the-road-to-learn-react.wieruch.com/badge.svg)](https://slack-the-road-to-learn-react.wieruch.com/)
+[![Build Status](https://travis-ci.org/the-road-to-graphql/react-graphql-client-library.svg?branch=master)](https://travis-ci.org/the-road-to-graphql/react-graphql-client-library) [![Slack](https://slack-the-road-to-learn-react.wieruch.com/badge.svg)](https://slack-the-road-to-learn-react.wieruch.com/) [![Greenkeeper badge](https://badges.greenkeeper.io/the-road-to-graphql/react-graphql-client-library.svg)](https://greenkeeper.io/)
 
 The library gives you a simple GraphQL client for React applications. But it shouldn't be used for production. Rather it should be used as inspiration for you and others to contribute to the GraphQL ecosystem.
 
