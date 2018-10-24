@@ -7,8 +7,8 @@
     "react-dom": "^16.3.0"
   },
   "dependencies": {
-    "axios": "^0.17.1",
-    "lodash": "^4.17.10"
+    "axios": "^0.18.0",
+    "lodash": "^4.17.11"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
@@ -16,7 +16,7 @@
     "babel-preset-env": "^1.7.0",
     "babel-preset-react": "^6.24.1",
     "babel-preset-stage-2": "^6.24.1",
-    "prettier": "^1.11.1"
+    "prettier": "^1.14.3"
   },
   "scripts": {
     "compile": "babel -d lib/ src/",
