@@ -15,6 +15,6 @@
     "eject": "react-scripts eject"
   },
   "devDependencies": {
-    "prettier": "^1.11.1"
+    "prettier": "^2.0.0"
   }
 }
