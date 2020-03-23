@@ -16,7 +16,7 @@
     "babel-preset-env": "^1.7.0",
     "babel-preset-react": "^6.24.1",
     "babel-preset-stage-2": "^6.24.1",
-    "prettier": "^1.14.3"
+    "prettier": "^2.0.2"
   },
   "scripts": {
     "compile": "babel -d lib/ src/",
